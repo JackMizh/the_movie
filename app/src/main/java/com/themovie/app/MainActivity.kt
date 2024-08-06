@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.themovie.app.ui.theme.TheMovieTheme
+import com.themovie.app.ui.view.FavoriteMovieListScreen
 import com.themovie.app.ui.view.MovieDetailScreen
 import com.themovie.app.ui.view.MovieListScreen
 import com.themovie.app.ui.viewmodel.MovieViewModel
@@ -27,6 +28,7 @@ class MainActivity : ComponentActivity() {
                         val movieId = backStackEntry.arguments?.getString("movieId")?.toIntOrNull()
                         movieId?.let { MovieDetailScreen(it, movieViewModel) }
                     }
+                    composable("favorite_movies") { FavoriteMovieListScreen(navController, movieViewModel) }
                 }
             }
         }
