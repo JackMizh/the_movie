@@ -1,5 +1,6 @@
 package com.themovie.app.ui.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.themovie.app.data.model.MovieDetailsResponse
@@ -10,8 +11,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class MovieViewModel : ViewModel() {
-    private val repository = MovieRepository()
+class MovieViewModel(context: Context) : ViewModel() {
+    private val repository = MovieRepository(context)
 
     private val _movies = MutableStateFlow<List<MovieResult>>(emptyList())
     val movies: StateFlow<List<MovieResult>> = _movies
@@ -24,6 +25,9 @@ class MovieViewModel : ViewModel() {
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
+
+    private val _isFavorite = MutableStateFlow(false)
+    val isFavorite: StateFlow<Boolean> = _isFavorite
 
     private var currentPage = 1
 
@@ -68,6 +72,23 @@ class MovieViewModel : ViewModel() {
                 }
             }
             _isLoading.value = false
+        }
+    }
+
+    fun toggleFavorite(movie: MovieDetailsResponse) {
+        viewModelScope.launch {
+            if (_isFavorite.value) {
+                repository.removeFromFavorites(movie)
+            } else {
+                repository.addToFavorites(movie)
+            }
+            checkIfFavorite(movie.id)
+        }
+    }
+
+    private fun checkIfFavorite(movieId: Int) {
+        viewModelScope.launch {
+            _isFavorite.value = repository.isFavorite(movieId)
         }
     }
 }

@@ -1,5 +1,7 @@
 package com.themovie.app.data.model
 
+import com.themovie.app.data.db.FavoriteMovieEntity
+
 data class MovieDetailsResponse(
     val adult: Boolean,
     val backdrop_path: String,
@@ -58,3 +60,12 @@ data class SpokenLanguage(
     val iso_639_1: String,
     val name: String
 )
+
+
+fun MovieDetailsResponse.toEntity(): FavoriteMovieEntity {
+    return FavoriteMovieEntity(
+        id = id,
+        vote_average = vote_average,
+        poster_path = poster_path,
+    )
+}

@@ -1,8 +1,12 @@
 package com.themovie.app.data.repository
 
+import android.content.Context
 import com.themovie.app.data.api.RetrofitInstance
+import com.themovie.app.data.db.FavoriteMovieDao
+import com.themovie.app.data.db.MovieDatabase
 import com.themovie.app.data.model.MovieDetailsResponse
 import com.themovie.app.data.model.MovieResult
+import com.themovie.app.data.model.toEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
@@ -13,8 +17,14 @@ sealed class Result<out T> {
     data class Error(val message: String) : Result<Nothing>()
 }
 
-class MovieRepository {
+class MovieRepository(context: Context) {
+    private val favoriteMovieDao: FavoriteMovieDao
     private val api = RetrofitInstance.api
+
+    init {
+        val database = MovieDatabase.getDatabase(context)
+        favoriteMovieDao = database.favoriteMovieDao()
+    }
 
     suspend fun getPopularMovies(page: Int): Result<List<MovieResult>> {
         return  withContext(Dispatchers.IO) {
@@ -40,5 +50,17 @@ class MovieRepository {
                 Result.Error("Server Error")
             }
         }
+    }
+
+    suspend fun addToFavorites(movie: MovieDetailsResponse) {
+        favoriteMovieDao.insert(movie.toEntity())
+    }
+
+    suspend fun removeFromFavorites(movie: MovieDetailsResponse) {
+        favoriteMovieDao.delete(movie.toEntity())
+    }
+
+    suspend fun isFavorite(movieId: Int): Boolean {
+        return favoriteMovieDao.getMovieById(movieId) != null
     }
 }
