@@ -2,22 +2,52 @@ package com.themovie.app.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.themovie.app.data.model.Result
+import com.themovie.app.data.model.MovieResult
 import com.themovie.app.data.repository.MovieRepository
-import kotlinx.coroutines.Dispatchers
+import com.themovie.app.data.repository.Result
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class MovieViewModel : ViewModel() {
     private val repository = MovieRepository()
-    private val _movies = MutableStateFlow<List<Result>>(emptyList())
-    val movies: StateFlow<List<Result>> = _movies
 
-    fun getPopularMovies(page: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val movies = repository.getPopularMovies(page)
-            _movies.value = movies
+    private val _movies = MutableStateFlow<List<MovieResult>>(emptyList())
+    val movies: StateFlow<List<MovieResult>> = _movies
+
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    private var currentPage = 1
+
+    init {
+        getPopularMovies()
+    }
+
+    fun getPopularMovies() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            when (val result = repository.getPopularMovies(currentPage)) {
+                is Result.Success -> {
+                    _movies.value += result.data
+                    _errorMessage.value = if (result.data.isEmpty()) "No Movies Available" else null
+                    currentPage++
+                }
+                is Result.Error -> {
+                    _errorMessage.value = result.message
+                }
+            }
+            _isLoading.value = false
+        }
+    }
+
+    fun refreshPopularMovies() {
+        viewModelScope.launch {
+            currentPage = 1
+            getPopularMovies()
         }
     }
 }

@@ -3,15 +3,19 @@
 package com.themovie.app.ui.view
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -21,24 +25,43 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import com.themovie.app.data.model.Result
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.themovie.app.data.model.MovieResult
 import com.themovie.app.ui.viewmodel.MovieViewModel
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun MovieListScreen(viewModel: MovieViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
     val movies by viewModel.movies.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.getPopularMovies(page = 1)
+    val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = isLoading)
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.layoutInfo.visibleItemsInfo }
+            .map { it.lastOrNull()?.index }
+            .distinctUntilChanged()
+            .collect { index ->
+                if(index == movies.size - 1) {
+                    viewModel.getPopularMovies()
+                }
+            }
     }
 
     Scaffold(
@@ -46,18 +69,55 @@ fun MovieListScreen(viewModel: MovieViewModel = androidx.lifecycle.viewmodel.com
             TopAppBar(title = { Text(text = "Popular Movies") })
         }
     ) {
-        LazyColumn(
-            modifier = Modifier.padding(top = 60.dp)
+        SwipeRefresh(
+            state = swipeRefreshState,
+            onRefresh = {
+                viewModel.refreshPopularMovies()
+            }
         ) {
-            items(movies) { movie ->
-                MovieItem(movie)
+            Box(modifier = Modifier.fillMaxSize()) {
+                when {
+                    isLoading -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                    movies.isEmpty() -> {
+                        Text(
+                            text = errorMessage ?: "Data Empty",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    errorMessage != null -> {
+                        Text(
+                            text = errorMessage ?: "Unknown Error",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    else -> {
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier.padding(top = 60.dp)
+                        ) {
+                            items(movies) { movie ->
+                                MovieItem(movie)
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-fun MovieItem(movie: Result) {
+fun MovieItem(movie: MovieResult) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -91,7 +151,7 @@ fun MovieItem(movie: Result) {
 @Composable
 fun MovieItemPreview() {
     MovieItem(
-        movie = Result(
+        movie = MovieResult(
             adult = false,
             backdrop_path = "/2RVcJbWFmICRDsVxRI8F5xRmRsK.jpg",
             genre_ids = listOf(27, 878, 53),
