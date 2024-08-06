@@ -81,4 +81,6 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
+    implementation("androidx.compose.material3:material3:1.2.0-rc01")
+    implementation("com.google.accompanist:accompanist-swiperefresh:0.24.4-alpha")
 }
