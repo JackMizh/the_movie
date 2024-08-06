@@ -1,7 +1,14 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
 }
+
+val credentialFile = project.rootProject.file("credentials.properties")
+val credentialProperty = Properties()
+credentialProperty.load(FileInputStream(credentialFile))
 
 android {
     namespace = "com.themovie.app"
@@ -18,11 +25,14 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        buildConfigField("String", "BASE_URL", credentialProperty["BASE_URL"].toString())
+        buildConfigField("String", "AUTH_KEY", credentialProperty["AUTH_KEY"].toString())
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -38,6 +48,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.4.3"
