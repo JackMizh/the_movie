@@ -1,6 +1,7 @@
 package com.themovie.app.data.repository
 
 import com.themovie.app.data.api.RetrofitInstance
+import com.themovie.app.data.model.MovieDetailsResponse
 import com.themovie.app.data.model.MovieResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -20,6 +21,19 @@ class MovieRepository {
             try {
                 val response = api.getPopularMovies(page = page)
                 Result.Success(response.results)
+            } catch (e: IOException) {
+                Result.Error("Network Error")
+            } catch (e: HttpException) {
+                Result.Error("Server Error")
+            }
+        }
+    }
+
+    suspend fun getMovieDetails(movieId: Int): Result<MovieDetailsResponse> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = api.getMovieDetails(movieId = movieId)
+                Result.Success(response)
             } catch (e: IOException) {
                 Result.Error("Network Error")
             } catch (e: HttpException) {
