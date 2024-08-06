@@ -3,6 +3,7 @@ package com.themovie.app.ui.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.themovie.app.data.model.FavoriteMovies
 import com.themovie.app.data.model.MovieDetailsResponse
 import com.themovie.app.data.model.MovieResult
 import com.themovie.app.data.repository.MovieRepository
@@ -28,6 +29,9 @@ class MovieViewModel(context: Context) : ViewModel() {
 
     private val _isFavorite = MutableStateFlow(false)
     val isFavorite: StateFlow<Boolean> = _isFavorite
+
+    private val _favoriteMovies = MutableStateFlow<List<FavoriteMovies>>(emptyList())
+    val favoriteMovies: StateFlow<List<FavoriteMovies>> = _favoriteMovies
 
     private var currentPage = 1
 
@@ -71,7 +75,16 @@ class MovieViewModel(context: Context) : ViewModel() {
                     _errorMessage.value = result.message
                 }
             }
+            _isFavorite.value = repository.isFavorite(movieId)
             _isLoading.value = false
+        }
+    }
+
+    fun loadFavoriteMovies() {
+        viewModelScope.launch {
+            repository.getFavoriteMovies().collect { movies ->
+                _favoriteMovies.value = movies
+            }
         }
     }
 
@@ -82,13 +95,7 @@ class MovieViewModel(context: Context) : ViewModel() {
             } else {
                 repository.addToFavorites(movie)
             }
-            checkIfFavorite(movie.id)
-        }
-    }
-
-    private fun checkIfFavorite(movieId: Int) {
-        viewModelScope.launch {
-            _isFavorite.value = repository.isFavorite(movieId)
+            _isFavorite.value = !_isFavorite.value
         }
     }
 }

@@ -3,11 +3,16 @@ package com.themovie.app.data.repository
 import android.content.Context
 import com.themovie.app.data.api.RetrofitInstance
 import com.themovie.app.data.db.FavoriteMovieDao
+import com.themovie.app.data.db.FavoriteMovieEntity
 import com.themovie.app.data.db.MovieDatabase
+import com.themovie.app.data.model.FavoriteMovies
 import com.themovie.app.data.model.MovieDetailsResponse
 import com.themovie.app.data.model.MovieResult
+import com.themovie.app.data.model.toDomain
 import com.themovie.app.data.model.toEntity
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.IOException
@@ -49,6 +54,12 @@ class MovieRepository(context: Context) {
             } catch (e: HttpException) {
                 Result.Error("Server Error")
             }
+        }
+    }
+
+    fun getFavoriteMovies(): Flow<List<FavoriteMovies>> {
+        return favoriteMovieDao.getFavoriteMovies().map { list ->
+            list.map { it.toDomain() }
         }
     }
 
