@@ -9,7 +9,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -26,10 +31,11 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.themovie.app.ui.viewmodel.MovieViewModel
 
 @Composable
-fun MovieDetailScreen(movieId: Int, viewModel: MovieViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
+fun MovieDetailScreen(movieId: Int, viewModel: MovieViewModel) {
     val movieDetails by viewModel.movieDetails.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val isFavorite by viewModel.isFavorite.collectAsState()
 
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = isLoading)
 
@@ -46,6 +52,20 @@ fun MovieDetailScreen(movieId: Int, viewModel: MovieViewModel = androidx.lifecyc
         Scaffold(
             topBar = {
                 TopAppBar(title = { Text("Movie Details") })
+            },
+            floatingActionButton = {
+                if (movieDetails != null) {
+                    FloatingActionButton(
+                        onClick = {
+                            movieDetails?.let { viewModel.toggleFavorite(it) }
+                        },
+                    ) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = if (isFavorite) "Remove from Favorites" else "Add to Favorites"
+                        )
+                    }
+                }
             }
         ) {
             Box(modifier = Modifier.fillMaxSize()) {

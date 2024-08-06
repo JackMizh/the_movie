@@ -31,10 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -46,7 +44,7 @@ import kotlinx.coroutines.flow.map
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MovieListScreen(navController: NavController, viewModel: MovieViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
+fun MovieListScreen(navController: NavController, viewModel: MovieViewModel) {
     val movies by viewModel.movies.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -146,36 +144,4 @@ fun MovieItem(movie: MovieResult, onClick: () -> Unit) {
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MovieItemPreview() {
-    MovieItem(
-        movie = MovieResult(
-            adult = false,
-            backdrop_path = "/2RVcJbWFmICRDsVxRI8F5xRmRsK.jpg",
-            genre_ids = listOf(27, 878, 53),
-            id = 762441,
-            original_language = "en",
-            original_title = "A Quiet Place: Day One",
-            overview = "As New York City is invaded by alien creatures who hunt by sound, a woman named Sam fights to survive with her cat.",
-            popularity = 4907.314,
-            poster_path = "/yrpPYKijwdMHyTGIOd1iK1h0Xno.jpg",
-            release_date = "2024-06-26",
-            title = "A Quiet Place: Day One",
-            video = false,
-            vote_average = 7.026,
-            vote_count = 1011
-        ),
-        onClick = {}
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MovieListScreenPreview() {
-    MovieListScreen(
-        navController = rememberNavController()
-    )
 }
