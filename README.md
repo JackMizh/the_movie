@@ -19,8 +19,7 @@ A simple Android application built with Kotlin, Jetpack Compose, and The Movie D
 - **Room Database**
 - **Retrofit**
 - **The Movie Database (TMDb) API**
-- **Hilt for Dependency Injection**
-- **Coil for Image Loading**
+- **GlideImage for Image Loading**
 
 ## Getting Started
 
