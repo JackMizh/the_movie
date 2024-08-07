@@ -3,7 +3,6 @@ package com.themovie.app.data.repository
 import android.content.Context
 import com.themovie.app.data.api.RetrofitInstance
 import com.themovie.app.data.db.FavoriteMovieDao
-import com.themovie.app.data.db.FavoriteMovieEntity
 import com.themovie.app.data.db.MovieDatabase
 import com.themovie.app.data.model.FavoriteMovies
 import com.themovie.app.data.model.MovieDetailsResponse
