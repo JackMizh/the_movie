@@ -15,7 +15,7 @@ A simple Android application built with Kotlin, Jetpack Compose, and The Movie D
 - **Kotlin**
 - **Jetpack Compose**
 - **MVVM Architecture**
-- **Coroutines & Flow**
+- **Flow**
 - **Room Database**
 - **Retrofit**
 - **The Movie Database (TMDb) API**
